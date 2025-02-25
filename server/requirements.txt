@@ -1,0 +1,13 @@
+Flask==2.3.3
+Flask-Cors==4.0.0
+Flask-JWT-Extended==4.5.2
+SQLAlchemy==2.0.20
+PyGithub==1.59.1
+gitpython==3.1.32
+python-dotenv==1.0.0
+pydantic==2.3.0
+sqlalchemy-utils==0.41.1
+psycopg2-binary==2.9.7
+bcrypt==4.0.1
+gunicorn==21.2.0
+pytest==7.4.1
