@@ -1,4 +1,3 @@
-# server/main.py
 from flask import Flask
 from flask_cors import CORS
 from app.api.routes import register_routes
