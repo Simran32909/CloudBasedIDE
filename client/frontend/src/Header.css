@@ -1,0 +1,83 @@
+.ide-header {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  background-color: var(--primary-bg);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 1rem;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-weight: 500;
+  margin: 0 1rem;
+  font-size: 14px;
+}
+
+.main-menu {
+  display: flex;
+}
+
+.main-menu button {
+  padding: 0 0.75rem;
+  height: 40px;
+  color: var(--text-color);
+  font-size: 13px;
+}
+
+.main-menu button:hover {
+  background-color: var(--hover-bg);
+}
+
+.header-breadcrumb {
+  flex: 1;
+  margin: 0 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb {
+  display: flex;
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb-segment {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.breadcrumb-separator {
+  margin: 0 4px;
+  color: var(--text-secondary);
+}
+
+.user-profile {
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+}
