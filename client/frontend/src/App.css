@@ -1,42 +1,157 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
+:root {
+  --primary-bg: #1e1e1e;
+  --secondary-bg: #252526;
+  --tertiary-bg: #333333;
+  --hover-bg: #2a2d2e;
+  --active-bg: #37373d;
+  --border-color: #474747;
+  --text-color: #cccccc;
+  --text-secondary: #8a8a8a;
+  --accent-color: #0e639c;
+  --error-color: #f44747;
+  --success-color: #89d185;
+  --warning-color: #cca700;
+  --selection-bg: #264f78;
+}
+
+/* Light theme variables */
+.light {
+  --primary-bg: #ffffff;
+  --secondary-bg: #f3f3f3;
+  --tertiary-bg: #e6e6e6;
+  --hover-bg: #e8e8e8;
+  --active-bg: #d6d6d6;
+  --border-color: #c8c8c8;
+  --text-color: #333333;
+  --text-secondary: #616161;
+  --selection-bg: #add6ff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow: hidden;
+}
+
+.ide-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--primary-bg);
+  color: var(--text-color);
+}
+
+.ide-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.ide-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.editor-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--secondary-bg);
+}
+
+.welcome-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
   padding: 2rem;
-  text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.welcome-screen h2 {
+  margin-bottom: 1rem;
+  font-weight: 400;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.welcome-screen p {
+  color: var(--text-secondary);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-.card {
-  padding: 2em;
+::-webkit-scrollbar-track {
+  background: var(--primary-bg);
 }
 
-.read-the-docs {
-  color: #888;
+::-webkit-scrollbar-thumb {
+  background: var(--tertiary-bg);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
+}
+
+/* Utility classes */
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.icon-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.icon-btn.active {
+  background-color: var(--active-bg);
+}
+
+.flex {
+  display: flex;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.resizer {
+  height: 5px;
+  background-color: var(--secondary-bg);
+  cursor: row-resize;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.resizer:hover {
+  background-color: var(--accent-color);
 }
