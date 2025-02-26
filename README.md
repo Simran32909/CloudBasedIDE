@@ -4,6 +4,8 @@ A browser-based integrated development environment that lets you code, build, an
 
 > **Note:** This project is currently under active development. Features and documentation are being continuously improved and updated.
 
+![Cloud IDE Interface](docs/images/img.png)
+
 ## Project Structure
 
 ```
