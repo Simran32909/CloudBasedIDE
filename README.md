@@ -103,20 +103,6 @@ The client is organized into the following main components:
 - **Terminal** - Command-line interface
 - **UI** - Shared UI components
 
-## Deployment
-
-### Docker Deployment
-
-To deploy the entire application using Docker:
-
-```bash
-docker-compose -f docker/docker-compose.yml -f docker/docker-compose.prod.yml up -d
-```
-
-### Manual Deployment
-
-See the deployment guides in the `docs/deployment` directory for platform-specific instructions.
-
 ## Contributing
 
 1. Fork the repository
