@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './Sidebar.css'
-import Explorer from './Explorer'
+import Explorer from './Explorer.jsx'
 
 function Sidebar({ collapsed, fileStructure, onFileSelect, activeFile }) {
   const [activeTab, setActiveTab] = useState('explorer')

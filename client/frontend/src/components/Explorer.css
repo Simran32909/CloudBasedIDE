@@ -1,0 +1,58 @@
+.explorer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tree-view {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.tree-item {
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.folder, .file {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 3px;
+}
+
+.folder:hover, .file:hover {
+  background-color: var(--hover-bg);
+}
+
+.file.active {
+  background-color: var(--selection-bg);
+}
+
+.folder-icon, .file-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 6px;
+  color: var(--text-secondary);
+}
+
+.folder-icon {
+  color: var(--warning-color);
+}
+
+.tree-children {
+  padding-left: 16px;
+}
+
+.item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-actions {
+  display: flex;
+  gap: 2px;
+}
