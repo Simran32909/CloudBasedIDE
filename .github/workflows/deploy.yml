@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]  
   workflow_dispatch:
 
 jobs:
@@ -26,9 +26,9 @@ jobs:
         run: |
           cd client
           npm run build
-
+          
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: client/dist 
+          folder: client/dist
           branch: gh-pages
