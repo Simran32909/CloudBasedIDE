@@ -4,7 +4,7 @@ A browser-based integrated development environment that lets you code, build, an
 
 > **Note:** This project is currently under active development. Features and documentation are being continuously improved and updated.
 
-![Cloud IDE Interface](docs/images/img1.png)
+You can access the live demo of the project at [this link](https://simran32909.github.io/CloudBasedIDE).
 
 ## Project Structure
 
