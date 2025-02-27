@@ -1,19 +1,73 @@
-import React, { useRef, useEffect, useState } from 'react';
-import './Terminal.css';
+import React, { useState, useRef, useEffect } from 'react';
 
 function Terminal({ height, onResize }) {
-  const resizerRef = useRef(null);
-  const [terminalOutput, setTerminalOutput] = useState([
-    { type: 'system', content: 'Cloud IDE Terminal' },
-    { type: 'system', content: 'Type "help" for available commands' },
-    { type: 'prompt', content: '> ' }
+  const [command, setCommand] = useState('');
+  const [history, setHistory] = useState([
+    { type: 'system', content: 'Welcome to Cloud IDE Terminal' },
+    { type: 'system', content: 'Type "help" to see available commands' }
   ]);
-  const [inputValue, setInputValue] = useState('');
-  const terminalContentRef = useRef(null);
-  const inputRef = useRef(null);
+  const terminalRef = useRef(null);
+  const resizerRef = useRef(null);
+  const historyEndRef = useRef(null);
 
+  // Terminal commands
+  const executeCommand = (cmd) => {
+    // Add command to history
+    setHistory(prev => [...prev, { type: 'command', content: `$ ${cmd}` }]);
+
+    // Process command
+    const cmdLower = cmd.trim().toLowerCase();
+
+    if (cmdLower === 'clear' || cmdLower === 'cls') {
+      setHistory([{ type: 'system', content: 'Terminal cleared' }]);
+    } else if (cmdLower === 'help') {
+      setHistory(prev => [
+        ...prev,
+        { type: 'output', content: 'Available commands:' },
+        { type: 'output', content: '  help - Show this help message' },
+        { type: 'output', content: '  clear, cls - Clear the terminal' },
+        { type: 'output', content: '  echo [text] - Display text' },
+        { type: 'output', content: '  date - Show current date and time' },
+        { type: 'output', content: '  ls - List files (simulated)' }
+      ]);
+    } else if (cmdLower.startsWith('echo ')) {
+      const text = cmd.substring(5);
+      setHistory(prev => [...prev, { type: 'output', content: text }]);
+    } else if (cmdLower === 'date') {
+      setHistory(prev => [...prev, {
+        type: 'output',
+        content: new Date().toLocaleString()
+      }]);
+    } else if (cmdLower === 'ls') {
+      setHistory(prev => [
+        ...prev,
+        { type: 'output', content: 'src/' },
+        { type: 'output', content: 'public/' },
+        { type: 'output', content: 'package.json' },
+        { type: 'output', content: 'README.md' }
+      ]);
+    } else if (cmd.trim() !== '') {
+      setHistory(prev => [
+        ...prev,
+        { type: 'error', content: `Command not found: ${cmd}` }
+      ]);
+    }
+
+    // Clear input
+    setCommand('');
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    executeCommand(command);
+  };
+
+  // Setup resizer functionality
   useEffect(() => {
     const resizer = resizerRef.current;
+    if (!resizer) return;
+
     let startY;
     let startHeight;
 
@@ -25,8 +79,11 @@ function Terminal({ height, onResize }) {
     };
 
     const onMouseMove = (e) => {
-      const deltaY = startY - e.clientY;
-      const newHeight = Math.max(100, Math.min(window.innerHeight * 0.7, startHeight + deltaY));
+      // Calculate new height (minimum 100px, maximum 80% of window height)
+      const newHeight = Math.min(
+        Math.max(100, startHeight - (e.clientY - startY)),
+        window.innerHeight * 0.8
+      );
       onResize(newHeight);
     };
 
@@ -44,111 +101,100 @@ function Terminal({ height, onResize }) {
     };
   }, [height, onResize]);
 
+  // Auto-scroll to bottom when history changes
   useEffect(() => {
-    if (terminalContentRef.current) {
-      terminalContentRef.current.scrollTop = terminalContentRef.current.scrollHeight;
-    }
-  }, [terminalOutput]);
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    if (inputValue.trim()) {
-      // Add user command to terminal output
-      const newOutput = [...terminalOutput];
-      // Update the last prompt with the command
-      newOutput[newOutput.length - 1] = { type: 'prompt', content: '> ' + inputValue };
-
-      // Process command
-      let response;
-      switch(inputValue.trim().toLowerCase()) {
-        case 'help':
-          response = { type: 'output', content: 'Available commands: help, clear, version, echo [text]' };
-          break;
-        case 'clear':
-          setTerminalOutput([
-            { type: 'system', content: 'Terminal cleared' },
-            { type: 'prompt', content: '> ' }
-          ]);
-          setInputValue('');
-          return;
-        case 'version':
-          response = { type: 'output', content: 'Cloud IDE Terminal v1.0.0' };
-          break;
-        default:
-          if (inputValue.trim().startsWith('echo ')) {
-            const echoText = inputValue.trim().substr(5);
-            response = { type: 'output', content: echoText };
-          } else {
-            response = { type: 'error', content: `Command not found: ${inputValue}` };
-          }
-      }
-
-      // Add response and new prompt
-      setTerminalOutput([
-        ...newOutput,
-        response,
-        { type: 'prompt', content: '> ' }
-      ]);
-    }
-
-    setInputValue('');
-  };
-
-  const focusInput = () => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  };
+    historyEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [history]);
 
   return (
-    <div className="terminal-container" style={{ height: `${height}px` }}>
-      <div className="resizer" ref={resizerRef}></div>
-      <div className="terminal-header">
-        <span>TERMINAL</span>
-        <div className="terminal-actions">
-          <button className="icon-btn" title="New Terminal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M8 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5H4a.5.5 0 0 1 0-1h3.5V4a.5.5 0 0 1 .5-.5z"/>
-              <path d="M7.5 8a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8.5a.5.5 0 0 1 .5-.5z"/>
-            </svg>
-          </button>
-          <button className="icon-btn" title="Kill Terminal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-              <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-            </svg>
-          </button>
-          <button className="icon-btn" title="Clear Terminal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
-            </svg>
-          </button>
-        </div>
+    <div
+      className="terminal-container"
+      style={{
+        height: `${height}px`,
+        backgroundColor: 'var(--secondary-bg)',
+        borderTop: '1px solid var(--border-color)',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
+      ref={terminalRef}
+    >
+      <div
+        className="resizer"
+        ref={resizerRef}
+      />
+
+      <div className="terminal-header" style={{
+        padding: '4px 8px',
+        backgroundColor: 'var(--tertiary-bg)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <span>Terminal</span>
+        <button
+          className="icon-btn"
+          onClick={() => onResize(height === 200 ? 400 : 200)}
+          title={height === 200 ? "Expand terminal" : "Collapse terminal"}
+        >
+          {height === 200 ? '↑' : '↓'}
+        </button>
       </div>
-      <div className="terminal-content" ref={terminalContentRef} onClick={focusInput}>
-        {terminalOutput.map((line, index) => (
-          <div key={index} className={`terminal-line ${line.type}`}>
-            {line.content}
-            {index === terminalOutput.length - 1 && line.type === 'prompt' && (
-              <form onSubmit={handleSubmit} className="terminal-input-form">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  className="terminal-input"
-                  autoFocus
-                />
-              </form>
-            )}
+
+      <div
+        className="terminal-output"
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '8px',
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          lineHeight: '1.5',
+          color: 'var(--text-color)'
+        }}
+      >
+        {history.map((entry, index) => (
+          <div
+            key={index}
+            className={`terminal-line terminal-${entry.type}`}
+            style={{
+              color: entry.type === 'error' ? 'var(--error-color)' :
+                    entry.type === 'system' ? 'var(--accent-color)' :
+                    'inherit',
+              marginBottom: '4px'
+            }}
+          >
+            {entry.content}
           </div>
         ))}
+        <div ref={historyEndRef} />
       </div>
+
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          padding: '8px',
+          borderTop: '1px solid var(--border-color)'
+        }}
+      >
+        <span style={{ marginRight: '8px' }}>$</span>
+        <input
+          type="text"
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--text-color)',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            outline: 'none'
+          }}
+          autoFocus
+        />
+      </form>
     </div>
   );
 }

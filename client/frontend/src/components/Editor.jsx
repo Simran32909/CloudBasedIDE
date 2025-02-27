@@ -1,76 +1,92 @@
 import React, { useState, useEffect } from 'react';
-import './Editor.css';
+import { API_URL } from '../config';
 
 function Editor({ file }) {
   const [content, setContent] = useState('');
-  const [language, setLanguage] = useState('javascript');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Here you would fetch file content from server
-    // For this demo, we're using placeholder content
+    // Reset states when file changes
+    setLoading(true);
+    setError(null);
+
+    const getFileContent = () => {
+      // Simulate API call
+      setTimeout(() => {
+        try {
+          // This is a simplified simulation - in a real app you'd fetch from API
+          const filePathParts = file.split('/');
+          const fileName = filePathParts[filePathParts.length - 1];
+
+          // Sample content based on file extension
+          let simulatedContent = '';
+
+          if (fileName.endsWith('.jsx')) {
+            simulatedContent = `import React from 'react';\n\nfunction ${fileName.replace('.jsx', '')}() {\n  return (\n    <div>\n      ${fileName.replace('.jsx', '')} Component\n    </div>\n  );\n}\n\nexport default ${fileName.replace('.jsx', '')};`;
+          } else if (fileName.endsWith('.js')) {
+            simulatedContent = `// ${fileName}\n\nconst ${fileName.replace('.js', '')} = {\n  init() {\n    console.log('${fileName.replace('.js', '')} initialized');\n  }\n};\n\nexport default ${fileName.replace('.js', '')};`;
+          } else if (fileName.endsWith('.json')) {
+            simulatedContent = `{\n  "name": "${fileName.replace('.json', '')}",\n  "version": "1.0.0"\n}`;
+          } else if (fileName.endsWith('.html')) {
+            simulatedContent = `<!DOCTYPE html>\n<html>\n<head>\n  <title>${fileName.replace('.html', '')}</title>\n</head>\n<body>\n  <h1>${fileName.replace('.html', '')}</h1>\n</body>\n</html>`;
+          } else if (fileName.endsWith('.css')) {
+            simulatedContent = `/* ${fileName} */\n\nbody {\n  margin: 0;\n  padding: 0;\n  font-family: sans-serif;\n}`;
+          } else {
+            simulatedContent = `// Content of ${fileName}`;
+          }
+
+          setContent(simulatedContent);
+          setLoading(false);
+        } catch (err) {
+          setError('Failed to load file content');
+          setLoading(false);
+        }
+      }, 300); // Simulate network delay
+    };
+
     if (file) {
-      // Simplified example
-      const ext = file.split('.').pop().toLowerCase();
-
-      // Set language based on file extension
-      switch (ext) {
-        case 'js':
-        case 'jsx':
-          setLanguage('javascript');
-          break;
-        case 'html':
-          setLanguage('html');
-          break;
-        case 'css':
-          setLanguage('css');
-          break;
-        case 'json':
-          setLanguage('json');
-          break;
-        default:
-          setLanguage('text');
-      }
-
-      // Mock content - in real app, this would come from backend
-      setContent(`// File: ${file}\n// This is a placeholder for the actual content of ${file}`);
+      getFileContent();
     }
   }, [file]);
 
+  const handleContentChange = (e) => {
+    setContent(e.target.value);
+    // In a real application, you would implement auto-save or a save button
+  };
+
+  if (loading) {
+    return <div className="editor-loading">Loading file...</div>;
+  }
+
+  if (error) {
+    return <div className="editor-error">{error}</div>;
+  }
+
   return (
     <div className="editor">
-      <div className="editor-tabs">
-        {file && (
-          <div className="tab active">
-            <span className="tab-name">
-              {file.split('/').pop()}
-            </span>
-            <button className="tab-close">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-              </svg>
-            </button>
-          </div>
-        )}
+      <div className="editor-header">
+        <span className="file-name">{file}</span>
       </div>
-
-      <div className="editor-content">
-        <div className="line-numbers">
-          {content.split('\n').map((_, index) => (
-            <div key={index} className="line-number">{index + 1}</div>
-          ))}
-        </div>
-        <div className="code-area">
-          <pre className={`language-${language}`}>
-            <code>{content}</code>
-          </pre>
-        </div>
-      </div>
-
-      <div className="editor-info">
-        <div className="language-indicator">{language.toUpperCase()}</div>
-        <div className="spacer"></div>
-        <div className="cursor-position">Ln 1, Col 1</div>
-      </div>
+      <textarea
+        className="editor-textarea"
+        value={content}
+        onChange={handleContentChange}
+        spellCheck="false"
+        style={{
+          width: '100%',
+          height: 'calc(100% - 30px)',
+          resize: 'none',
+          backgroundColor: 'var(--secondary-bg)',
+          color: 'var(--text-color)',
+          border: 'none',
+          padding: '10px',
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          lineHeight: '1.5',
+          outline: 'none'
+        }}
+      />
     </div>
   );
 }

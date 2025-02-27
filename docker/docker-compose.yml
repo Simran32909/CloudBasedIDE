@@ -3,27 +3,19 @@ version: '3'
 services:
   frontend:
     build:
-      context: ./client/frontend
-      dockerfile: Dockerfile
+      context: C:\Users\simra\PycharmProjects\CloudBasedIDE\client\frontend  # Frontend context
+      dockerfile: Dockerfile  # Specify Dockerfile in the frontend directory
     ports:
-      - "3000:80"
+      - "3000:80"  # Expose port 3000 on localhost and map to port 80 in the container
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://backend:8000
 
   backend:
     build:
-      context: ./server
+      context: C:/Users/simra/PycharmProjects/CloudBasedIDE/server
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    volumes:
-      - ./server:/app
-      - user_code:/app/user_code
-    environment:
-      - JWT_SECRET=your_secret_key_here
-      - DATABASE_URL=postgresql://user:password@db:5432/cloudide
     depends_on:
       - db
 
