@@ -20,7 +20,6 @@ def setup_middleware(app):
     @app.after_request
     def after_request(response):
         """Process response before it's sent back to the client"""
-        # Calculate request duration
         if hasattr(g, 'start_time'):
             duration = time.time() - g.start_time
 

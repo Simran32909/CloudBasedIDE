@@ -1,20 +1,20 @@
-# server/app/config.py
 import os
-from datetime import timedelta
+from pathlib import Path
 
-class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard-to-guess-string'
-    DEBUG = os.environ.get('FLASK_DEBUG', 'True') == 'True'
+# JWT Configuration
+JWT_SECRET = os.getenv("JWT_SECRET", "default_development_secret")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRES_IN = 60 * 24 * 7  # 7 days in minutes
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///cloud_ide.db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+# Database Configuration
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./cloudide.db")
 
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+# File Storage Configuration
+PROJECT_ROOT = Path(__file__).parent
+USER_CODE_DIR = os.getenv("USER_CODE_DIR", str(PROJECT_ROOT / "user_code"))
 
-    STORAGE_PATH = os.environ.get('STORAGE_PATH') or os.path.join(os.getcwd(), 'storage')
-
-    GIT_ENABLED = True
-
-    DOCKER_HOST = os.environ.get('DOCKER_HOST') or 'unix://var/run/docker.sock'
-    EXECUTION_TIMEOUT = 30  # seconds
+# CORS Configuration
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "https://simran32909.github.io"
+]

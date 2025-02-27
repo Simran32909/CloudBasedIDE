@@ -1,17 +1,13 @@
-# server/Dockerfile
 FROM python:3.9-slim
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Docker CLI for Docker-in-Docker functionality
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     ca-certificates \
@@ -24,26 +20,20 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y docker-ce-cli \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
 COPY . .
 
-# Create storage directory
 RUN mkdir -p /app/storage
 
-# Set environment variables
 ENV PYTHONPATH=/app
 ENV FLASK_APP=server/main.py
 ENV FLASK_ENV=production
 ENV DOCKER_HOST=unix:///var/run/docker.sock
 
-# Expose port
 EXPOSE 5000
 
-# Run the application
+# Run application
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server.main:create_app()"]
