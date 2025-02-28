@@ -1,7 +1,7 @@
 # server/app/api/execution.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from server.app.services.executor_service import execute_code
+from app.services.executor_service import execute_code
 
 execution_bp = Blueprint('execution', __name__)
 

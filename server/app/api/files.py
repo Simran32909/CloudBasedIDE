@@ -1,7 +1,7 @@
 # server/app/api/files.py
 from flask import Blueprint, request, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from server.app.services.storage_service import (
+from app.services.storage_service import (
     create_file,
     update_file,
     delete_file,

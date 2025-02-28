@@ -1,9 +1,9 @@
 # server/app/api/projects.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from server.app.models.project import Project
-from server.app.models.user import db
-from server.app.services.storage_service import (
+from app.models.project import Project
+from app.models.user import db
+from app.services.storage_service import (
     create_directory,
     ensure_user_path_exists
 )
@@ -110,7 +110,7 @@ def delete_project(project_id):
 
     # Delete project directory (this will recursively delete all files)
     try:
-        from server.app.services.storage_service import delete_directory
+        from app.services.storage_service import delete_directory
         delete_directory(user_id, project.path)
     except Exception as e:
         return jsonify({'error': f'Failed to delete project directory: {str(e)}'}), 500

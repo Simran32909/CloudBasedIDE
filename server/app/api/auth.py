@@ -5,8 +5,8 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity
 )
-from server.app.services.auth_service import authenticate_user, register_user
-from server.app.models.user import User
+from app.services.auth_service import authenticate_user, register_user
+from app.models.user import User
 
 auth_bp = Blueprint('auth', __name__)
 

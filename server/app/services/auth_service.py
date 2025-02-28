@@ -1,5 +1,5 @@
 # server/app/services/auth_service.py
-from server.app.models.user import User, db
+from app.models.user import User, db
 import re
 
 

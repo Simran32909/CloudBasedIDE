@@ -1,7 +1,7 @@
 # server/app/api/git.py
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from server.app.services.git_service import (
+from app.services.git_service import (
     git_init,
     git_clone,
     git_status,

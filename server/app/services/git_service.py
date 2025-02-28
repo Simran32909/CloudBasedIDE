@@ -3,7 +3,7 @@ import os
 import git
 import shutil
 from flask import current_app
-from server.app.services.storage_service import validate_path, ensure_user_path_exists
+from app.services.storage_service import validate_path, ensure_user_path_exists
 
 
 def git_init(user_id, path):

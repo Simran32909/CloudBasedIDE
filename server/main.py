@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 from flask import Flask
 from flask_cors import CORS
 from app.api.routes import register_routes

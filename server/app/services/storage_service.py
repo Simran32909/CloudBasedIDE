@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import shutil
 from flask import current_app
-from server.app.models.user import User
+from app.models.user import User
 
 
 def get_user_storage_path(user_id):

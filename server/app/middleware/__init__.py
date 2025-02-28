@@ -36,7 +36,7 @@ def setup_middleware(app):
         return response
 
     # Register error handlers
-    from server.app.middleware.error_handler import register_error_handlers
+    from app.middleware.error_handler import register_error_handlers
     register_error_handlers(app)
 
     return app
