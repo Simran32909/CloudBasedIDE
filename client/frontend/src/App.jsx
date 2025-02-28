@@ -5,6 +5,7 @@ import Editor from './components/Editor'
 import Header from './components/Header'
 import Terminal from './components/Terminal'
 import StatusBar from './components/StatusBar'
+import Explorer from './components/Explorer'
 
 function App() {
   const [activeFile, setActiveFile] = useState(null)
@@ -27,7 +28,6 @@ function App() {
                 'Header.jsx': { type: 'file', content: '// Header component code' },
                 'Sidebar.jsx': { type: 'file', content: '// Sidebar component code' },
                 'Editor.jsx': { type: 'file', content: '// Editor component code' },
-                'MenuBar.jsx': { type: 'file', content: '// MenuBar component code' },
               }
             },
             'App.jsx': { type: 'file', content: '// App component code' },
