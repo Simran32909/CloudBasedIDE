@@ -13,37 +13,39 @@ function App() {
   const [terminalVisible, setTerminalVisible] = useState(true)
   const [terminalHeight, setTerminalHeight] = useState(200)
   const [theme, setTheme] = useState('dark')
-
-  // Sample file structure for the explorer
-  const [fileStructure, setFileStructure] = useState({
-    'project-name': {
-      type: 'directory',
-      children: {
-        'src': {
-          type: 'directory',
-          children: {
-            'components': {
-              type: 'directory',
-              children: {
-                'Header.jsx': { type: 'file', content: '// Header component code' },
-                'Sidebar.jsx': { type: 'file', content: '// Sidebar component code' },
-                'Editor.jsx': { type: 'file', content: '// Editor component code' },
-              }
-            },
-            'App.jsx': { type: 'file', content: '// App component code' },
-            'main.jsx': { type: 'file', content: '// Main entry point' },
-          }
-        },
-        'public': {
-          type: 'directory',
-          children: {
-            'index.html': { type: 'file', content: '<!DOCTYPE html>...' },
-          }
-        },
-        'package.json': { type: 'file', content: '{ "name": "project" }' },
-      }
-    }
-  })
+  const [fileStructure, setFileStructure] = useState([
+  {
+    name: 'project-name',
+    type: 'directory',
+    children: [
+      {
+        name: 'src',
+        type: 'directory',
+        children: [
+          {
+            name: 'components',
+            type: 'directory',
+            children: [
+              { name: 'Header.jsx', type: 'file', path: 'project-name/src/components/Header.jsx' },
+              { name: 'Sidebar.jsx', type: 'file', path: 'project-name/src/components/Sidebar.jsx' },
+              { name: 'Editor.jsx', type: 'file', path: 'project-name/src/components/Editor.jsx' },
+            ]
+          },
+          { name: 'App.jsx', type: 'file', path: 'project-name/src/App.jsx' },
+          { name: 'main.jsx', type: 'file', path: 'project-name/src/main.jsx' }
+        ]
+      },
+      {
+        name: 'public',
+        type: 'directory',
+        children: [
+          { name: 'index.html', type: 'file', path: 'project-name/public/index.html' }
+        ]
+      },
+      { name: 'package.json', type: 'file', path: 'project-name/package.json' }
+    ]
+  }
+]);
 
   const handleFileSelect = (filePath) => {
     setActiveFile(filePath)
