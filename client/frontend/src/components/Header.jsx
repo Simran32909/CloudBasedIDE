@@ -1,5 +1,5 @@
 import React from 'react';
-import MenuBar from './MenuBar';
+import PropTypes from 'prop-types';
 
 function Header({ toggleSidebar, toggleTerminal, toggleTheme, theme, activeFile }) {
   return (
@@ -54,11 +54,16 @@ function Header({ toggleSidebar, toggleTerminal, toggleTheme, theme, activeFile 
           </button>
         </div>
       </div>
-
-      {/* Add the MenuBar component */}
-      <MenuBar />
     </div>
   );
 }
+
+Header.propTypes = {
+  toggleSidebar: PropTypes.func.isRequired,
+  toggleTerminal: PropTypes.func.isRequired,
+  toggleTheme: PropTypes.func.isRequired,
+  theme: PropTypes.string.isRequired,
+  activeFile: PropTypes.string
+};
 
 export default Header;

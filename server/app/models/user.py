@@ -15,9 +15,6 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Relationships
-    projects = db.relationship('Project', backref='owner', lazy='dynamic')
-
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -31,3 +28,9 @@ class User(db.Model):
             'email': self.email,
             'created_at': self.created_at.isoformat(),
         }
+
+# Import Project model after User model is defined to avoid circular imports
+from .project import Project
+
+# Add relationship after both classes are defined
+User.projects = db.relationship('Project', backref='owner', lazy='dynamic')

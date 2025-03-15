@@ -3,7 +3,7 @@ version: '3'
 services:
   frontend:
     build:
-      context: C:\Users\simra\PycharmProjects\CloudBasedIDE\client\frontend  # Frontend context
+      context: C:/Users/simra/PycharmProjects/CloudBasedIDE/client/frontend  # Frontend context
       dockerfile: Dockerfile  # Specify Dockerfile in the frontend directory
     ports:
       - "3000:80"  # Expose port 3000 on localhost and map to port 80 in the container

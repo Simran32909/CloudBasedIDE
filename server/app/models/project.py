@@ -1,8 +1,6 @@
-# server/app/models/project.py
-from .user import db
 from datetime import datetime
+from .user import db
 import uuid
-
 
 class Project(db.Model):
     __tablename__ = 'projects'
@@ -12,15 +10,12 @@ class Project(db.Model):
     description = db.Column(db.Text)
     path = db.Column(db.String(255), unique=True, nullable=False)
     is_public = db.Column(db.Boolean, default=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # Foreign keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-
     @staticmethod
     def generate_path(user_id, name):
-        """Generate a unique path for the project"""
         safe_name = name.lower().replace(' ', '-')
         unique_id = str(uuid.uuid4())[:8]
         return f"projects/{user_id}/{safe_name}-{unique_id}"
@@ -32,7 +27,7 @@ class Project(db.Model):
             'description': self.description,
             'path': self.path,
             'is_public': self.is_public,
-            'user_id': self.user_id,
+            'owner_id': self.owner_id,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

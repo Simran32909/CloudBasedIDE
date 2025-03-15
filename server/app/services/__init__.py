@@ -1,9 +1,3 @@
-# server/app/services/__init__.py
-"""
-Services package for Cloud IDE
-Contains business logic and core functionality
-"""
-
 from flask import current_app
 import logging
 

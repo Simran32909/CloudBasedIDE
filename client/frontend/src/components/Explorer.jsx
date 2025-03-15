@@ -1,134 +1,222 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
+import { fileService } from '../services/api';
+import './Explorer.css';
 
-function Explorer({ fileStructure, onFileSelect, activeFile }) {
-  const renderTree = (node, path = '', level = 0) => {
-    const entries = Object.entries(node);
+function Explorer({ files, onFileSelect, activeFile, onRefresh }) {
+  const [error, setError] = useState(null);
 
-    return entries.map(([key, value]) => {
-      const currentPath = path ? `${path}/${key}` : key;
-      const isDirectory = value.type === 'directory';
+  const handleCreateFile = async () => {
+    const fileName = prompt('Enter file name:');
+    if (!fileName) return;
 
-      if (isDirectory) {
+    try {
+      await fileService.createFile('', fileName);
+      onRefresh(); // Refresh file list after creating file
+    } catch (err) {
+      setError(err.message);
+      console.error('Failed to create file:', err);
+    }
+  };
+
+  const handleCreateDirectory = async () => {
+    const dirName = prompt('Enter folder name:');
+    if (!dirName) return;
+
+    try {
+      await fileService.createDirectory('', dirName);
+      onRefresh(); // Refresh file list after creating directory
+    } catch (err) {
+      setError(err.message);
+      console.error('Failed to create directory:', err);
+    }
+  };
+
+  const renderTree = (items) => {
+    return items.map(item => {
+      if (item.type === 'directory') {
         return (
           <DirectoryItem
-            key={currentPath}
-            name={key}
-            path={currentPath}
-            children={value.children}
-            level={level}
+            key={item.path}
+            name={item.name}
+            path={item.path}
             onFileSelect={onFileSelect}
+            onCreateFile={handleCreateFile}
+            onCreateDirectory={handleCreateDirectory}
             activeFile={activeFile}
+            onRefresh={onRefresh}
           />
         );
       } else {
         return (
           <FileItem
-            key={currentPath}
-            name={key}
-            path={currentPath}
-            level={level}
+            key={item.path}
+            name={item.name}
+            path={item.path}
             onFileSelect={onFileSelect}
-            isActive={activeFile === currentPath}
+            isActive={activeFile === item.path}
           />
         );
       }
     });
   };
 
+  if (error) {
+    return <div className="explorer-error">{error}</div>;
+  }
+
   return (
-    <div
-      className="explorer"
-      style={{
-        overflow: 'auto',
-        height: '100%'
-      }}
-    >
-      <div className="explorer-header" style={{ padding: '8px', fontWeight: 'bold' }}>
-        EXPLORER
+    <div className="explorer">
+      <div className="explorer-header">
+        <span>EXPLORER</span>
+        <div className="header-actions">
+          <button
+            className="icon-btn"
+            onClick={handleCreateFile}
+            title="New File"
+          >
+            📄
+          </button>
+          <button
+            className="icon-btn"
+            onClick={handleCreateDirectory}
+            title="New Folder"
+          >
+            📁
+          </button>
+        </div>
       </div>
-      <div className="file-tree">
-        {renderTree(fileStructure)}
+      <div className="tree-view">
+        {renderTree(files || [])}
       </div>
     </div>
   );
 }
 
-function DirectoryItem({ name, path, children, level, onFileSelect, activeFile }) {
-  const [expanded, setExpanded] = useState(true);
+Explorer.propTypes = {
+  files: PropTypes.array,
+  onFileSelect: PropTypes.func.isRequired,
+  activeFile: PropTypes.string,
+  onRefresh: PropTypes.func.isRequired
+};
 
-  const toggleExpanded = (e) => {
-    e.stopPropagation();
-    setExpanded(!expanded);
+function DirectoryItem({ name, path, onFileSelect, onCreateFile, onCreateDirectory, activeFile, onRefresh }) {
+  const [expanded, setExpanded] = useState(true);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadDirectoryContents = async () => {
+    try {
+      setLoading(true);
+      const contents = await fileService.listFiles(path);
+      setItems(contents);
+    } catch (err) {
+      console.error('Failed to load directory contents:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const paddingLeft = level * 16 + 8;
+  const handleCreateFile = async () => {
+    const fileName = prompt('Enter file name:');
+    if (!fileName) return;
+
+    try {
+      await fileService.createFile(path, fileName);
+      onRefresh();
+      loadDirectoryContents();
+    } catch (err) {
+      console.error('Failed to create file:', err);
+    }
+  };
+
+  const handleCreateDirectory = async () => {
+    const dirName = prompt('Enter folder name:');
+    if (!dirName) return;
+
+    try {
+      await fileService.createDirectory(path, dirName);
+      onRefresh();
+      loadDirectoryContents();
+    } catch (err) {
+      console.error('Failed to create directory:', err);
+    }
+  };
 
   return (
     <div className="directory-item">
-      <div
-        className="directory-header"
-        onClick={toggleExpanded}
-        style={{
-          paddingLeft: `${paddingLeft}px`,
-          paddingRight: '8px',
-          height: '24px',
-          display: 'flex',
-          alignItems: 'center',
-          cursor: 'pointer',
-          backgroundColor: 'var(--secondary-bg)',
-          userSelect: 'none'
-        }}
-      >
-        <span style={{ marginRight: '4px' }}>
-          {expanded ? '▼' : '►'}
-        </span>
-        <span style={{ marginRight: '4px' }}>
-          {expanded ? '📂' : '📁'}
-        </span>
-        <span>{name}</span>
+      <div className="directory-header">
+        <div 
+          className="directory-name" 
+          onClick={() => setExpanded(!expanded)}
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          <span>{expanded ? '▼' : '►'}</span>
+          <span>{expanded ? '📂' : '📁'}</span>
+          <span>{name}</span>
+        </div>
+        <div className="directory-actions">
+          <button
+            className="icon-btn small"
+            onClick={handleCreateFile}
+            title="New File"
+          >
+            📄
+          </button>
+          <button
+            className="icon-btn small"
+            onClick={handleCreateDirectory}
+            title="New Folder"
+          >
+            📁
+          </button>
+        </div>
       </div>
-
-      {expanded && (
+      {expanded && !loading && items.length > 0 && (
         <div className="directory-children">
-          {Object.entries(children).map(([childName, childValue]) => {
-            const childPath = `${path}/${childName}`;
-            if (childValue.type === 'directory') {
-              return (
-                <DirectoryItem
-                  key={childPath}
-                  name={childName}
-                  path={childPath}
-                  children={childValue.children}
-                  level={level + 1}
-                  onFileSelect={onFileSelect}
-                  activeFile={activeFile}
-                />
-              );
-            } else {
-              return (
-                <FileItem
-                  key={childPath}
-                  name={childName}
-                  path={childPath}
-                  level={level + 1}
-                  onFileSelect={onFileSelect}
-                  isActive={activeFile === childPath}
-                />
-              );
-            }
-          })}
+          {items.map(item => (
+            item.type === 'directory' ? (
+              <DirectoryItem
+                key={item.path}
+                name={item.name}
+                path={item.path}
+                onFileSelect={onFileSelect}
+                onCreateFile={onCreateFile}
+                onCreateDirectory={onCreateDirectory}
+                activeFile={activeFile}
+                onRefresh={onRefresh}
+              />
+            ) : (
+              <FileItem
+                key={item.path}
+                name={item.name}
+                path={item.path}
+                onFileSelect={onFileSelect}
+                isActive={activeFile === item.path}
+              />
+            )
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-function FileItem({ name, path, level, onFileSelect, isActive }) {
+DirectoryItem.propTypes = {
+  name: PropTypes.string.isRequired,
+  path: PropTypes.string.isRequired,
+  onFileSelect: PropTypes.func.isRequired,
+  onCreateFile: PropTypes.func.isRequired,
+  onCreateDirectory: PropTypes.func.isRequired,
+  activeFile: PropTypes.string,
+  onRefresh: PropTypes.func.isRequired
+};
+
+function FileItem({ name, path, onFileSelect, isActive }) {
   const handleClick = () => {
     onFileSelect(path);
   };
 
-  // Get file icon based on extension
   const getFileIcon = (fileName) => {
     if (fileName.endsWith('.jsx') || fileName.endsWith('.js')) {
       return '📄';
@@ -143,29 +231,22 @@ function FileItem({ name, path, level, onFileSelect, isActive }) {
     }
   };
 
-  const paddingLeft = level * 16 + 8;
-
   return (
     <div
       className={`file-item ${isActive ? 'active' : ''}`}
       onClick={handleClick}
-      style={{
-        paddingLeft: `${paddingLeft}px`,
-        paddingRight: '8px',
-        height: '24px',
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'pointer',
-        backgroundColor: isActive ? 'var(--selection-bg)' : 'transparent',
-        userSelect: 'none'
-      }}
     >
-      <span style={{ marginRight: '4px', marginLeft: '12px' }}>
-        {getFileIcon(name)}
-      </span>
-      <span>{name}</span>
+      <span className="file-icon">{getFileIcon(name)}</span>
+      <span className="file-name">{name}</span>
     </div>
   );
 }
+
+FileItem.propTypes = {
+  name: PropTypes.string.isRequired,
+  path: PropTypes.string.isRequired,
+  onFileSelect: PropTypes.func.isRequired,
+  isActive: PropTypes.bool
+};
 
 export default Explorer;

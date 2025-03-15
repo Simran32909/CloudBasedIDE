@@ -10,12 +10,9 @@ from app.models.user import User
 
 auth_bp = Blueprint('auth', __name__)
 
-
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-
-    # Validate required fields
     required_fields = ['username', 'email', 'password']
     for field in required_fields:
         if field not in data:

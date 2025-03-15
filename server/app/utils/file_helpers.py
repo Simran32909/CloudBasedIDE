@@ -23,7 +23,6 @@ def get_file_type(file_path):
         'binary': False
     }
 
-    # Map extensions to languages for syntax highlighting
     language_map = {
         '.py': 'python',
         '.js': 'javascript',
@@ -55,11 +54,9 @@ def get_file_type(file_path):
         '.vue': 'vue'
     }
 
-    # Set language based on file extension
     if ext in language_map:
         file_info['language'] = language_map[ext]
 
-    # Determine if binary file
     binary_extensions = [
         '.png', '.jpg', '.jpeg', '.gif', '.bmp', '.ico', '.webp',
         '.pdf', '.zip', '.tar', '.gz', '.rar', '.7z', '.exe', '.dll',

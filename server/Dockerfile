@@ -29,11 +29,10 @@ COPY . .
 RUN mkdir -p /app/storage
 
 ENV PYTHONPATH=/app
-ENV FLASK_APP=server/main.py
+ENV FLASK_APP=main.py
 ENV FLASK_ENV=production
 ENV DOCKER_HOST=unix:///var/run/docker.sock
 
 EXPOSE 5000
 
-# Run application
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "server.main:create_app()"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:create_app()"]

@@ -1,16 +1,17 @@
 # server/app/services/storage_service.py
 import os
-from pathlib import Path
 import shutil
+from pathlib import Path
 from flask import current_app
+import logging
 from app.models.user import User
 
+logger = logging.getLogger(__name__)
 
 def get_user_storage_path(user_id):
-    """Get the base storage path for a user"""
-    storage_base = current_app.config['STORAGE_PATH']
-    return os.path.join(storage_base, str(user_id))
-
+    """Get the absolute path to a user's storage directory"""
+    base_path = current_app.config.get('STORAGE_PATH', 'storage')
+    return os.path.join(base_path, str(user_id))
 
 def ensure_user_path_exists(user_id):
     """Ensure the user's storage directory exists"""
@@ -18,170 +19,143 @@ def ensure_user_path_exists(user_id):
     os.makedirs(user_path, exist_ok=True)
     return user_path
 
-
 def validate_path(user_id, path):
-    """Validate that a path is within the user's storage area"""
-    user_base_path = get_user_storage_path(user_id)
-    absolute_path = os.path.abspath(os.path.join(user_base_path, path))
-
-    # Check if the path is within the user's storage area
-    if not absolute_path.startswith(user_base_path):
-        raise ValueError("Invalid path: outside of user storage area")
-
-    return absolute_path
-
+    """Validate that a path is within the user's storage directory"""
+    user_path = get_user_storage_path(user_id)
+    full_path = os.path.normpath(os.path.join(user_path, path))
+    
+    if not full_path.startswith(os.path.normpath(user_path)):
+        raise ValueError("Invalid path: Access denied")
+    
+    return full_path
 
 def list_files(user_id, path=""):
-    """List files and directories at the specified path"""
-    absolute_path = validate_path(user_id, path)
+    """List files in a directory"""
+    try:
+        user_path = ensure_user_path_exists(user_id)
+        target_path = os.path.join(user_path, path) if path else user_path
+        
+        if not os.path.exists(target_path):
+            return {"files": [], "directories": []}
 
-    # Ensure the directory exists
-    if not os.path.exists(absolute_path):
-        raise ValueError(f"Path does not exist: {path}")
+        files = []
+        directories = []
 
-    if not os.path.isdir(absolute_path):
-        raise ValueError(f"Path is not a directory: {path}")
+        for item in os.listdir(target_path):
+            item_path = os.path.join(path, item) if path else item
+            full_path = os.path.join(target_path, item)
+            
+            if os.path.isfile(full_path):
+                files.append({
+                    "name": item,
+                    "path": item_path,
+                    "type": "file"
+                })
+            elif os.path.isdir(full_path):
+                directories.append({
+                    "name": item,
+                    "path": item_path,
+                    "type": "directory"
+                })
 
-    result = []
-
-    for item in os.listdir(absolute_path):
-        item_path = os.path.join(absolute_path, item)
-        is_dir = os.path.isdir(item_path)
-
-        # Calculate relative path from user storage root
-        user_base_path = get_user_storage_path(user_id)
-        relative_path = os.path.relpath(item_path, user_base_path)
-
-        result.append({
-            'name': item,
-            'path': relative_path.replace('\\', '/'),  # Normalize path separators
-            'type': 'directory' if is_dir else 'file',
-            'size': 0 if is_dir else os.path.getsize(item_path),
-            'modified': os.path.getmtime(item_path)
-        })
-
-    # Sort directories first, then files, alphabetically
-    result.sort(key=lambda x: (0 if x['type'] == 'directory' else 1, x['name'].lower()))
-
-    return result
-
+        return {
+            "files": sorted(files, key=lambda x: x["name"]),
+            "directories": sorted(directories, key=lambda x: x["name"])
+        }
+    except Exception as e:
+        logger.error(f"Error listing files: {str(e)}")
+        raise
 
 def create_file(user_id, directory, name, content=""):
-    """Create a new file with the given content"""
-    # Validate the directory path
-    dir_absolute_path = validate_path(user_id, directory)
-
-    # Ensure the directory exists
-    if not os.path.exists(dir_absolute_path):
-        os.makedirs(dir_absolute_path, exist_ok=True)
-
-    # Construct the file path
-    file_relative_path = os.path.join(directory, name)
-    file_absolute_path = os.path.join(dir_absolute_path, name)
-
-    # Check if file already exists
-    if os.path.exists(file_absolute_path):
-        raise ValueError(f"File already exists: {file_relative_path}")
-
-    # Write content to the file
-    with open(file_absolute_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-
-    return file_relative_path.replace('\\', '/')
-
-
-def update_file(user_id, path, content):
-    """Update an existing file with new content"""
-    absolute_path = validate_path(user_id, path)
-
-    # Check if file exists
-    if not os.path.exists(absolute_path):
-        raise ValueError(f"File does not exist: {path}")
-
-    # Check if it's actually a file
-    if not os.path.isfile(absolute_path):
-        raise ValueError(f"Path is not a file: {path}")
-
-    # Write content to the file
-    with open(absolute_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-
-    return True
-
+    """Create a new file"""
+    try:
+        user_path = ensure_user_path_exists(user_id)
+        
+        # Combine directory and name to get full path
+        relative_path = os.path.join(directory, name) if directory else name
+        full_path = validate_path(user_id, relative_path)
+        
+        # Create parent directories if they don't exist
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        
+        # Write the file
+        with open(full_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        return {"message": "File created successfully", "path": relative_path}
+    except Exception as e:
+        logger.error(f"Error creating file: {str(e)}")
+        raise
 
 def read_file(user_id, path):
-    """Read the content of a file"""
-    absolute_path = validate_path(user_id, path)
+    """Read file content"""
+    try:
+        full_path = validate_path(user_id, path)
+        
+        if not os.path.exists(full_path):
+            raise FileNotFoundError(f"File not found: {path}")
+        
+        with open(full_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        return {"content": content, "path": path}
+    except Exception as e:
+        logger.error(f"Error reading file: {str(e)}")
+        raise
 
-    # Check if file exists
-    if not os.path.exists(absolute_path):
-        raise ValueError(f"File does not exist: {path}")
-
-    # Check if it's actually a file
-    if not os.path.isfile(absolute_path):
-        raise ValueError(f"Path is not a file: {path}")
-
-    # Read content from the file
-    with open(absolute_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-
-    return content
-
+def update_file(user_id, path, content):
+    """Update file content"""
+    try:
+        full_path = validate_path(user_id, path)
+        
+        if not os.path.exists(full_path):
+            raise FileNotFoundError(f"File not found: {path}")
+        
+        with open(full_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        return {"message": "File updated successfully", "path": path}
+    except Exception as e:
+        logger.error(f"Error updating file: {str(e)}")
+        raise
 
 def delete_file(user_id, path):
     """Delete a file"""
-    absolute_path = validate_path(user_id, path)
-
-    # Check if file exists
-    if not os.path.exists(absolute_path):
-        raise ValueError(f"File does not exist: {path}")
-
-    # Check if it's actually a file
-    if not os.path.isfile(absolute_path):
-        raise ValueError(f"Path is not a file: {path}")
-
-    # Delete the file
-    os.remove(absolute_path)
-
-    return True
-
+    try:
+        full_path = validate_path(user_id, path)
+        
+        if not os.path.exists(full_path):
+            raise FileNotFoundError(f"File not found: {path}")
+        
+        os.remove(full_path)
+        return {"message": "File deleted successfully", "path": path}
+    except Exception as e:
+        logger.error(f"Error deleting file: {str(e)}")
+        raise
 
 def create_directory(user_id, parent_path, name):
     """Create a new directory"""
-    # Validate the parent path
-    parent_absolute_path = validate_path(user_id, parent_path)
-
-    # Ensure the parent directory exists
-    if not os.path.exists(parent_absolute_path):
-        os.makedirs(parent_absolute_path, exist_ok=True)
-
-    # Construct the directory path
-    dir_relative_path = os.path.join(parent_path, name)
-    dir_absolute_path = os.path.join(parent_absolute_path, name)
-
-    # Check if directory already exists
-    if os.path.exists(dir_absolute_path):
-        raise ValueError(f"Directory already exists: {dir_relative_path}")
-
-    # Create the directory
-    os.makedirs(dir_absolute_path)
-
-    return dir_relative_path.replace('\\', '/')
-
+    try:
+        # Combine parent path and name to get full path
+        relative_path = os.path.join(parent_path, name) if parent_path else name
+        full_path = validate_path(user_id, relative_path)
+        
+        os.makedirs(full_path, exist_ok=True)
+        return {"message": "Directory created successfully", "path": relative_path}
+    except Exception as e:
+        logger.error(f"Error creating directory: {str(e)}")
+        raise
 
 def delete_directory(user_id, path):
     """Delete a directory and all its contents"""
-    absolute_path = validate_path(user_id, path)
-
-    # Check if directory exists
-    if not os.path.exists(absolute_path):
-        raise ValueError(f"Directory does not exist: {path}")
-
-    # Check if it's actually a directory
-    if not os.path.isdir(absolute_path):
-        raise ValueError(f"Path is not a directory: {path}")
-
-    # Delete the directory and all its contents
-    shutil.rmtree(absolute_path)
-
-    return True
+    try:
+        full_path = validate_path(user_id, path)
+        
+        if not os.path.exists(full_path):
+            raise FileNotFoundError(f"Directory not found: {path}")
+        
+        shutil.rmtree(full_path)
+        return {"message": "Directory deleted successfully", "path": path}
+    except Exception as e:
+        logger.error(f"Error deleting directory: {str(e)}")
+        raise
